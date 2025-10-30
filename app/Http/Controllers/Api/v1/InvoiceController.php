@@ -10,14 +10,26 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\v1\InvoiceResource;
 use App\Http\Resources\v1\InvoiceCollection;
 
+use App\Filters\v1\InvoicesFilter;
+use Illuminate\Http\Request;
+
 class InvoiceController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        return new InvoiceCollection(Invoice::paginate());
+        $filter = new InvoicesFilter();
+        $queryItems = $filter->transform($request); //['column','operator','value']
+
+        if (count($queryItems) == 0) {
+            return new InvoiceCollection(Invoice::paginate());
+        }
+        else {
+            $invoices = Invoice::where($queryItems)->paginate;
+            return new InvoiceCollection($invoices->appends($request->query()));
+        }
     }
 
     /**

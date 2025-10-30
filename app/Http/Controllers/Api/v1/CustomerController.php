@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Http\Requests\StoreCustomerRequest;
-use App\Http\Requests\UpdateCustomerRequest;
+use App\Http\Requests\v1\StoreCustomerRequest;
+use App\Http\Requests\v1\UpdateCustomerRequest;
 use App\Models\Customer;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\v1\CustomerResource;
@@ -24,19 +24,11 @@ class CustomerController extends Controller
         $includeInvoices = $request->query('includeInvoices');
 
         $customers = Customer::where($filterItems);
-        if($includeInvoices) {
+        if ($includeInvoices) {
             $customers = $customers->with('invoices');
         }
-        
-        return new CustomerCollection($customers->paginate()->appends($request->query()));
-    }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        //
+        return new CustomerCollection($customers->paginate()->appends($request->query()));
     }
 
     /**
@@ -44,7 +36,13 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        //
+        // Get validated data (after prepareForValidation runs)
+        $data = $request->validated();
+
+        // At this point, $data includes 'postal_code' (not 'postalCode')
+        $customer = Customer::create($data);
+
+        return new CustomerResource($customer);
     }
 
     /**
@@ -54,19 +52,11 @@ class CustomerController extends Controller
     {
         $includeInvoices = request()->query('includeInvoices');
 
-        if($includeInvoices){
+        if ($includeInvoices) {
             return new CustomerResource($customer->loadMissing('invoices'));
         }
 
         return new CustomerResource($customer);
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Customer $customer)
-    {
-        //
     }
 
     /**

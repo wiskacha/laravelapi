@@ -36,10 +36,7 @@ class CustomerController extends Controller
      */
     public function store(StoreCustomerRequest $request)
     {
-        // Get validated data (after prepareForValidation runs)
         $data = $request->validated();
-
-        // At this point, $data includes 'postal_code' (not 'postalCode')
         $customer = Customer::create($data);
 
         return new CustomerResource($customer);
@@ -64,7 +61,10 @@ class CustomerController extends Controller
      */
     public function update(UpdateCustomerRequest $request, Customer $customer)
     {
-        //
+        $data = $request->validated();
+        $customer->update($data);
+
+        return new CustomerResource($customer);
     }
 
     /**

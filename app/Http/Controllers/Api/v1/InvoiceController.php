@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Api\v1;
 
-use App\Http\Requests\StoreInvoiceRequest;
-use App\Http\Requests\UpdateInvoiceRequest;
+use App\Http\Requests\v1\StoreInvoiceRequest;
+use App\Http\Requests\v1\UpdateInvoiceRequest;
 use App\Models\Invoice;
 use App\Http\Controllers\Controller;
 
@@ -12,6 +12,8 @@ use App\Http\Resources\v1\InvoiceCollection;
 
 use App\Filters\v1\InvoicesFilter;
 use Illuminate\Http\Request;
+use Illuminate\Support\Arr;
+use App\Http\Requests\v1\BulkStoreInvoiceRequest;
 
 class InvoiceController extends Controller
 {
@@ -25,8 +27,7 @@ class InvoiceController extends Controller
 
         if (count($queryItems) == 0) {
             return new InvoiceCollection(Invoice::paginate());
-        }
-        else {
+        } else {
             $invoices = Invoice::where($queryItems)->paginate;
             return new InvoiceCollection($invoices->appends($request->query()));
         }
@@ -48,13 +49,22 @@ class InvoiceController extends Controller
         //
     }
 
+    public function bulkStore(BulkStoreInvoiceRequest $request) {
+        /** @var \Illuminate\Http\Request $request */
+        $bulk = collect($request->all())->map(function($arr, $key){
+            return Arr::except($arr, ['customerId', 'billedDate', 'paidDate']);
+        });
+
+        Invoice::insert($bulk->toArray());
+    }
+
     /**
      * Display the specified resource.
      */
     public function show(Invoice $invoice)
     {
         return new InvoiceResource($invoice);
-    }   
+    }
 
     /**
      * Show the form for editing the specified resource.

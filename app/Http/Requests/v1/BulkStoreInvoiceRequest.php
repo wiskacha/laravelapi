@@ -9,6 +9,7 @@ use Illuminate\Validation\Rule;
  * @method mixed input(string $key = null, mixed $default = null)
  * @method void merge(array $input)
  * @method array toArray()
+ * @method \App\Models\User|null user()
  */
 class BulkStoreInvoiceRequest extends FormRequest
 {
@@ -17,7 +18,9 @@ class BulkStoreInvoiceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user != null && $user->tokenCan('create');
     }
 
     /**

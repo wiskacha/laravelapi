@@ -8,6 +8,7 @@ use Illuminate\Validation\Rule;
 /**
  * @method mixed input(string $key = null, mixed $default = null)
  * @method void merge(array $input)
+ * @method \App\Models\User|null user()
  */
 class StoreCustomerRequest extends FormRequest
 {
@@ -16,7 +17,10 @@ class StoreCustomerRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        $user = $this->user();
+
+        return $user != null && $user->tokenCan('create');
+
     }
 
     /**
